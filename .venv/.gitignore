@@ -1,0 +1,10 @@
+# Ignorar o ambiente virtual (arquivos pesados de dependências)
+.venv/
+venv/
+
+# Ignorar caches do Python
+__pycache__/
+*.pyc
+
+# Ignorar caches do VS Code
+.vscode/
