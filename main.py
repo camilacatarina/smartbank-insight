@@ -1,50 +1,66 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from pydantic import BaseModel
 import hashlib
 
+from database import engine, Base, SessionLocal
+import models
+
 app = FastAPI()
 
-def mascarar_cpf(cpf_original: str) -> str:
-    # 1. Limpamos o CPF (removemos pontos e traços) para o hash ser sempre padrão
-    cpf_limpo = cpf_original.replace(".", "").replace("-", "").strip()
-    
-    # 2. Transformamos o texto em bytes e aplicamos o algoritmo SHA-256
-    hash_objeto = hashlib.sha256(cpf_limpo.encode('utf-8'))
-    
-    # 3. Transformamos o resultado em uma string de letras e números (hexadecimal)
-    cpf_escondido = hash_objeto.hexdigest()
-    
-    return cpf_escondido
+Base.metadata.create_all(bind=engine)
 
-# Definição de como os dados devem chegar
-class Simulacao(BaseModel):
+# Schema do Pydantic para validar os dados que chegam do Frontend
+class SimulacaoRequest(BaseModel):
     nome: str
     cpf: str
-    renda: float
-    valor_desejado: float
+    renda_mensal: float
+    valor_solicitado: float
     parcelas: int
 
-@app.get("/")
-def home():
-    return {"mensagem": "API de Crédito Bancário Online"}
+# Função para abrir e fechar a conexão com o banco de dados de forma segura
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Função de mascarar o CPF
+def mascarar_cpf(cpf_original: str) -> str:
+    cpf_limpo = cpf_original.replace(".", "").replace("-", "").strip()
+    hash_objeto = hashlib.sha256(cpf_limpo.encode('utf-8'))
+    return hash_objeto.hexdigest()
 
 @app.post("/simular")
-def analisar_credito(dados: Simulacao):
-    # Função de segurança
-    cpf_protegido = mascarar_cpf(dados.cpf)
+def criar_simulacao(request: SimulacaoRequest, db: Session = Depends(get_db)):
+    cpf_criptografado = mascarar_cpf(request.cpf)
     
-    # A lógica de negócio
-    limite_parcela = dados.renda * 0.30
-    valor_parcela = dados.valor_desejado / dados.parcelas
+    # A regra de negócio
+    limite_aceitavel = request.renda_mensal * 0.30
+    valor_parcela = request.valor_solicitado / request.parcelas
     
-    if valor_parcela <= limite_parcela:
-        resultado = "APROVADO"
+    if valor_parcela <= limite_aceitavel:
+        status_resultado = "APROVADO"
     else:
-        resultado = "REPROVADO"
+        status_resultado = "REPROVADO"
         
+    nova_simulacao = models.Simulacao(
+        nome=request.nome,
+        cpf=cpf_criptografado,  # Salvando o CPF protegido!
+        renda_mensal=request.renda_mensal,
+        valor_solicitado=request.valor_solicitado,
+        parcelas=request.parcelas,
+        status=status_resultado
+    )
+    
+    # Grava as informações no banco de dados de verdade
+    db.add(nova_simulacao)
+    db.commit()
+    db.refresh(nova_simulacao)
+    
     return {
-        "status": resultado,
-        "valor_parcela": round(valor_parcela, 2),
-        "limite_permitido": limite_parcela,
-        "cpf_no_banco_": cpf_protegido 
+        "mensagem": "Simulação processada e salva com sucesso!",
+        "id": nova_simulacao.id,
+        "status": nova_simulacao.status,
+        "valor_parcela": round(valor_parcela, 2)
     }
