@@ -1,5 +1,4 @@
-# Simulação de entrada de dados (O que viria do Frontend)
-nome = "Maria"
+nome = "Maria Catarina Pereira Chaves"
 cpf = "123.456.789-00"
 renda_mensal = 4000.00
 valor_solicitado = 15000.00

@@ -1,7 +1,14 @@
 import uuid
-from sqlalchemy import Column, String, Float, Integer, DateTime
+import enum
+from sqlalchemy import Column, String, Float, Integer, DateTime, Enum
 from sqlalchemy.sql import func
 from database import Base
+
+class StatusSimulacao(str, enum.Enum):
+    APROVADO = "APROVADO"
+    REPROVADO = "REPROVADO"
+    EM_ANALISE = "EM_ANALISE"
+
 
 class Simulacao(Base):
     __tablename__ = "simulacoes"
@@ -12,6 +19,7 @@ class Simulacao(Base):
     renda_mensal = Column(Float, nullable=False)
     valor_solicitado = Column(Float, nullable=False)
     parcelas = Column(Integer, nullable=False)
-    status = Column(String, nullable=False)
+    
+    status = Column(Enum(StatusSimulacao), nullable=False)
     
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
