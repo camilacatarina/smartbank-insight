@@ -18,12 +18,3 @@ O sistema classifica as propostas automaticamente em 3 status:
 1. 🟢 **APROVADO:** Parcela compromete menos de 25% da renda mensal.
 2. 🟡 **EM ANÁLISE:** Valor solicitado acima de R$ 50.000 ou parcela muito próxima do limite (entre 25% e 30% da renda).
 3. 🔴 **REPROVADO:** Parcela ultrapassa o limite de 30% da renda mensal.
-
-## Como rodar o projeto na sua máquina
-
-Para rodar este projeto localmente, siga o passo a passo:
-
-**1. Clone o repositório**
-```bash
-git clone [https://github.com/camilacatarina/smartbank-insight.git](https://github.com/camilacatarina/smartbank-insight.git)
-cd smartbank-insight
