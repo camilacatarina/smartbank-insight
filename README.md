@@ -25,5 +25,5 @@ Para rodar este projeto localmente, siga o passo a passo:
 
 **1. Clone o repositório**
 ```bash
-git clone [https://github.com/SEU_USUARIO/smartbank-insight.git](https://github.com/SEU_USUARIO/smartbank-insight.git)
+git clone [https://github.com/camilacatarina/smartbank-insight.git](https://github.com/camilacatarina/smartbank-insight.git)
 cd smartbank-insight
